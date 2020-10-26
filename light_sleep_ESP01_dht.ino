@@ -3,16 +3,16 @@
 #include <PubSubClient.h>
 #include "DHT.h"
 
-#define USE_SERIAL_DEBUG false
+#define USE_SERIAL_DEBUG true
 
 // Required for LIGHT_SLEEP_T delay mode
 extern "C" {
 #include "user_interface.h"
 }
 
-const char* ssid = "JUMP";
-const char* password = "025260652";
-const char* mqtt_server = "siriprapawat.trueddns.com";
+const char* ssid = "chuwi10";
+const char* password = "1234567890";
+const char* mqtt_server = "192.168.137.124";//siriprapawat.trueddns.com
 
 #define DHT11PIN 2                      // define the digital I/O pin
 #define DHT11TYPE DHT11                 // DHT 11 
@@ -25,6 +25,8 @@ unsigned long lastMsg = 0;
 char msg[MSG_BUFFER_SIZE];
 int value = 0;
 
+unsigned long t1Millis = 0;
+unsigned long t2Millis = 0;
 
 void setup() {                          //The setup function is called once at startup of the sketch
   pinMode(BUILTIN_LED, OUTPUT);         // Initialize the BUILTIN_LED pin as an output
@@ -38,7 +40,7 @@ void setup() {                          //The setup function is called once at s
 #endif
   dht.begin();
   setup_wifi();
-  client.setServer(mqtt_server, 14283); //default 1883
+  client.setServer(mqtt_server, 1883); //default 1883,jump->14283
   client.setCallback(callbackMqtt);
 }
 
@@ -64,7 +66,9 @@ void loop() {
   wifi_fpm_do_sleep(sleep_time_in_ms * 1000 );
   delay(sleep_time_in_ms + 1);
 
+
 #if USE_SERIAL_DEBUG
+  t1Millis = millis();
   Serial.println("Exit light sleep mode");
   Serial.println(F("--"));
   Serial.println();
@@ -111,6 +115,11 @@ void loop() {
     client.publish("humid", msg);
     delay(100);//wait mqtt send complete
   }
+
+#if USE_SERIAL_DEBUG
+  t2Millis = millis();
+  Serial.println(t2Millis - t1Millis);
+#endif
 }
 
 void setup_wifi() {
